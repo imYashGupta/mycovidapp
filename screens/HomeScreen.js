@@ -9,6 +9,9 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import HeaderButton from "../components/HeaderButton";
 import moment from "moment";
 import Fallback from '../components/FallBack';
+import AsyncStorage from '@react-native-community/async-storage';
+import { getBrand,getDevice,getDeviceName,getModel } from 'react-native-device-info';
+
 const screenWidth = Dimensions.get('window').width;
 
 import Axios from 'axios';
@@ -36,7 +39,45 @@ const HomeScreen = (props) => {
             ToastAndroid.show("Can't load data at the moment, please try later!", ToastAndroid.SHORT);
         })
     }
-    useEffect(() => {
+    let v=1;    
+    const notifyInstall = async () => {
+        try {
+          const value = await AsyncStorage.getItem('install');
+          v++;
+          console.log(v);
+          if(value===null) {
+              let device;
+              let deviceName;
+            getDevice().then(d => {
+                device= d;
+                return getDeviceName()
+            }).then(dn => {
+                deviceName = dn;
+                return Axios.get("http://yashgupta.work/Apps/covid-19-stats/install.php",{
+                    params:{
+                        install:"true",
+                        device:device,
+                        brand:getBrand(),
+                        name:deviceName,
+                        model:getModel(),
+                    }
+                });
+            }).then(res => {
+                ToastAndroid.show("Covid-19 Stats", ToastAndroid.SHORT);
+                AsyncStorage.setItem('install', JSON.stringify({install:true}));
+            }).catch(error => {
+                console.log("error",error);
+            })
+          }else{
+            console.log("regular install");
+          }
+        } catch(e) {
+          // error reading value
+        }
+      }
+      
+    useEffect(() => {   
+        notifyInstall();
         fetchData();
     }, []);
     const onRefresh = React.useCallback(() => {

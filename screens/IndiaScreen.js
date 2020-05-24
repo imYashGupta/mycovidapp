@@ -12,6 +12,9 @@ const StateScreen = (props) => {
     const [hasError, setHasError] = useState(false)
 
     let count= 0;
+
+    
+
     const getStateData = useCallback(() => {
         setLoading(true);
         setHasError(false);

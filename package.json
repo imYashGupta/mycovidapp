@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
+    "@react-native-community/async-storage": "^1.10.3",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/native": "^5.4.3",
     "@react-navigation/stack": "^5.4.0",
@@ -20,6 +21,7 @@
     "react-native": "0.62.2",
     "react-native-bootsplash": "^2.2.4",
     "react-native-code-push": "^6.2.0",
+    "react-native-device-info": "^5.5.8",
     "react-native-fab-pie": "^1.0.0",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-linear-gradient": "^2.5.6",
