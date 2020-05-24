@@ -1,16 +1,21 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { StyleSheet, Text, View, ActivityIndicator, TextInput, FlatList,Image } from 'react-native'
 import { THEME } from '../util/THEME'
-// import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {  TouchableNativeFeedback } from 'react-native-gesture-handler';
+import Fallback from '../components/FallBack';
+
 import Axios from 'axios';
 const StateScreen = (props) => {
     const [state, setState] = useState([]);
     const [stateBackup, setStatebackup] = useState([]);
     const [loading, setLoading] = useState(true);
-    let count = 0;
+    const [hasError, setHasError] = useState(false)
+
+
     const getStateData = useCallback(() => {
         setLoading(true);
+        setHasError(false);
         Axios.get("https://disease.sh/v2/countries").then(response => {
             const data = response.data;
             const country = data.sort((a, b) => {
@@ -19,8 +24,10 @@ const StateScreen = (props) => {
             setState(country);
             setStatebackup(country)
             setLoading(false);
-            count++
-            console.log(count);
+            setHasError(false);
+
+        }).catch(error => {
+            setHasError(true);
         });
     }, [setLoading])
     const numberWithCommas = (x) => {
@@ -43,13 +50,17 @@ const StateScreen = (props) => {
     useEffect(() => {
         getStateData();
     }, [])
-
+    if(hasError){
+        return(
+            <Fallback fallbackHandler={getStateData}/>
+        )
+    }
     return (
         <View style={styles.screen}>
             {/* <ActivityIndicator size="large" color={THEME.CONDITION} /> */}
             <View style={styles.searchBar}>
                 <View>
-                    {/* <Ionicons name="md-search" size={24} color="#ccc" /> */}
+                    <Ionicons name="md-search" size={24} color="#ccc" />
                 </View>
                 <TextInput style={styles.textInput} placeholder="Search Country" placeholderTextColor="#ccc" onChangeText={(text) => search(text)} />
             </View>

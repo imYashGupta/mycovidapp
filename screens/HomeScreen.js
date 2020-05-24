@@ -1,13 +1,14 @@
 import React,{useState,useEffect} from 'react'
-import { StyleSheet, Text, View, StatusBar, Dimensions, ScrollView, RefreshControl, Image } from 'react-native'
+import { StyleSheet, Text, View, StatusBar, Dimensions, ScrollView, RefreshControl, Image,ActivityIndicator, ToastAndroid } from 'react-native'
 import SkeletonContent from "react-native-skeleton-content-nonexpo";
 import { THEME } from '../util/THEME'
 import  Chart from "./../components/PieChart/Chart";
 import Card from "../components/CardStyle";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import { HeaderButtons, Item } from "react-navigation-header-buttons";
-// import HeaderButton from "../components/HeaderButton";
+import { HeaderButtons, Item } from "react-navigation-header-buttons";
+import HeaderButton from "../components/HeaderButton";
 import moment from "moment";
+import Fallback from '../components/FallBack';
 const screenWidth = Dimensions.get('window').width;
 
 import Axios from 'axios';
@@ -16,17 +17,23 @@ const HomeScreen = (props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [data, setData] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [firstLoad, setFirstLoad] = useState(true);
+    const [hasError, setHasError] = useState(false)
     const fetchData = () => {
         console.log("run")
         setLoading(true);
+        setHasError(false);
         Axios.get("https://api.covid19india.org/data.json").then(response => {
             setTimeout(() => {
                 setData(response.data.statewise[0]);
                 setLoading(false);
+                setFirstLoad(false)
+                setHasError(false);
             },1500)
             console.log("success")
         }).catch(error => {
-            console.log(error);
+            setHasError(true);
+            ToastAndroid.show("Can't load data at the moment, please try later!", ToastAndroid.SHORT);
         })
     }
     useEffect(() => {
@@ -67,6 +74,21 @@ const HomeScreen = (props) => {
     const getDate = (timestamp) => {
             return moment(timestamp, 'DD/MM/YYYY HH:mm:ss', true).format("DD MMM, YYYY [on] hh:mm A");
     }
+  
+    if (hasError) {
+        return(
+            <Fallback fallbackHandler={fetchData}/>
+        )        
+    }
+    if (firstLoad) {
+        return (
+             <View style={[styles.screen,{justifyContent:"center",alignItems:"center"}]}>
+                 <ActivityIndicator size="large" color={THEME.GREEN} />
+             </View>
+        )        
+    }
+
+
   return (
     <View style={styles.screen}>
             <ScrollView 
@@ -188,13 +210,13 @@ export const ScreenOptions = (props) => {
       },
       headerTitle:"COVID-19 INDIA Stats",
       headerTintColor:"white",
-    //   headerRight:() => {
-    //     return (
-    //         <HeaderButtons HeaderButtonComponent={HeaderButton}>
-    //             <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("AboutScreen")} />
-    //         </HeaderButtons>
-    //     )
-    // }
+      headerRight:() => {
+        return (
+            <HeaderButtons HeaderButtonComponent={HeaderButton}>
+                <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("AboutScreen")} />
+            </HeaderButtons>
+        )
+    }
      
   }
 }

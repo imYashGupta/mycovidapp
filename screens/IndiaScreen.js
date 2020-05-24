@@ -1,24 +1,31 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { StyleSheet, Text, View, ActivityIndicator, TextInput, FlatList} from 'react-native'
 import { THEME } from '../util/THEME'
-// import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
+import Fallback from '../components/FallBack';
 import Axios from 'axios';
 const StateScreen = (props) => {
     const [state, setState] = useState([]);
     const [stateBackup, setStatebackup] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hasError, setHasError] = useState(false)
+
     let count= 0;
     const getStateData = useCallback(() => {
         setLoading(true);
+        setHasError(false);
         Axios.get("https://api.covid19india.org/data.json").then(response => {
             const data = response.data.statewise;
             data.splice(0, 1);
             setState(data);
             setStatebackup(data)
             setLoading(false);
+            setHasError(false);
             count++
             console.log(count);
+        }).catch(error => {
+            setHasError(true);      
         });
     }, [setLoading])
     const numberWithCommas = (x) => {
@@ -43,12 +50,18 @@ const StateScreen = (props) => {
         getStateData();
     }, [])
 
+    if(hasError){
+        return(
+            <Fallback fallbackHandler={getStateData}/>
+        )
+    }
+
     return (
         <View style={styles.screen}>
             {/* <ActivityIndicator size="large" color={THEME.CONDITION} /> */}
             <View style={styles.searchBar}>
                 <View>
-                    {/* <Ionicons name="md-search" size={24} color="#ccc" /> */}
+                    <Ionicons name="md-search" size={24} color="#ccc" />
                 </View>
                 <TextInput style={styles.textInput} placeholder="Search" placeholderTextColor="#ccc" onChangeText={(text) => search(text)} />
             </View>
@@ -162,7 +175,7 @@ export const ScreenOptions = (props) => {
             return ( 
                 <View style={{marginRight:10}}>
                     <TouchableNativeFeedback onPress={() => props.navigation.navigate("WorldScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-                        {/* <Ionicons name="ios-globe" size={24} color="white" /> */}
+                        <Ionicons name="ios-globe" size={24} color="white" />
                         <Text style={styles.headerButtonText}>World</Text>
                     </TouchableNativeFeedback>
                 </View>

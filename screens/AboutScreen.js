@@ -1,8 +1,8 @@
 import React from 'react'
-import { StyleSheet, Text, View, Image, TouchableOpacity, Linking } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity, Linking,ScrollView } from 'react-native'
 import CardStyle from '../components/CardStyle'
 import { THEME } from '../util/THEME'
-// import Entypo from 'react-native-vector-icons/Entypo';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const openLink = async (url) => {
     // Checking if the link is supported for links with custom URL scheme.
@@ -27,12 +27,12 @@ const AboutScreen = () => {
                 <View style={styles.iconsContainer}>
                     <TouchableOpacity style={styles.icon} activeOpacity={0.5} onPress={() => openLink('https://twitter.com/itsyashgupta')}>
                         <View style={styles.icon}>
-                                {/* <Entypo name="twitter-with-circle" size={32} color="white" /> */}
+                                <Entypo name="twitter-with-circle" size={32} color="white" />
                             </View>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.icon} activeOpacity={0.5} onPress={() => openLink('https://www.facebook.com/ImYashGupta')}>
                         <View style={styles.icon}>
-                            {/* <Entypo name="facebook-with-circle" size={32} color="white" /> */}
+                            <Entypo name="facebook-with-circle" size={32} color="white" />
                         </View>
                     </TouchableOpacity>
                     {/* <TouchableOpacity style={styles.icon} activeOpacity={0.5}>
@@ -42,11 +42,12 @@ const AboutScreen = () => {
                     </TouchableOpacity> */}
                     <TouchableOpacity style={styles.icon} activeOpacity={0.5} onPress={() => openLink('mailto:hello@yashgupta.work')}>
                         <View style={styles.icon}>
-                            {/* <Entypo name="mail-with-circle" size={32} color="white" /> */}
+                            <Entypo name="mail-with-circle" size={32} color="white" />
                         </View>
                     </TouchableOpacity>
                 </View>
             </CardStyle>
+            <ScrollView>
             <View style={styles.textContainer}>
                 <Text style={styles.text}>India specific data and stats Provided by <Text style={styles.textBold}>covid19india.org</Text>.</Text>
                 <Text style={styles.text}>World stats Provided by <Text style={styles.textBold}>corona.lmao.ninja</Text>.</Text>
@@ -61,6 +62,7 @@ const AboutScreen = () => {
                 <Text style={styles.text}>Share the app with your friends and family. i might be adding more stats and featurs.</Text>
                 <Text style={styles.text}>Be Safe!</Text>
             </View>
+            </ScrollView>
         </View>
     )
 }

@@ -1,16 +1,21 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { StyleSheet, Text, View, ActivityIndicator, TextInput,FlatList,TouchableNativeFeedback } from 'react-native'
 import { THEME } from '../util/THEME'
-// import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Axios from 'axios';
 import InfoCard from '../components/InfoCard';
+import Fallback from '../components/FallBack';
+
 const StateScreen = (props) => {
     const stateName = props.route.params.state;
 
     const [data, setData] = useState([]);
     const [dataBackup, setDatabackup] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hasError, setHasError] = useState(false)
+
     const getStateData = useCallback(() => {
+        setHasError(false);
         setLoading(true);
         Axios.get("https://api.covid19india.org/resources/resources.json").then(response => {
             const data = response.data.resources;
@@ -20,7 +25,11 @@ const StateScreen = (props) => {
             setData(stateData);
             setDatabackup(stateData);
             setLoading(false);
+            setHasError(false);
+
             // console.log(stateData);          
+        }).catch(error => {
+            setHasError(true);
         });
     }, [setLoading])
     const numberWithCommas = (x) => {
@@ -54,13 +63,17 @@ const StateScreen = (props) => {
     }, [])
 
 
-
+    if(hasError){
+        return(
+            <Fallback fallbackHandler={getStateData}/>
+        )
+    }
     return (
         <View style={styles.screen}>
             {/* <ActivityIndicator size="large" color={THEME.CONDITION} /> */}
             <View style={styles.searchBar}>
                 <View>
-                    {/* <Ionicons name="md-search" size={24} color="#ccc" /> */}
+                    <Ionicons name="md-search" size={24} color="#ccc" />
                 </View>
                 <TextInput style={styles.textInput} placeholder="Search City" placeholderTextColor="#ccc"  onChangeText={(text) => search(text)} />
             </View>
