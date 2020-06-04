@@ -23,7 +23,8 @@ const HomeScreen = (props) => {
     const [firstLoad, setFirstLoad] = useState(true);
     const [hasError, setHasError] = useState(false)
     const fetchData = () => {
-        console.log("run")
+ 
+        
         setLoading(true);
         setHasError(false);
         Axios.get("https://api.covid19india.org/data.json").then(response => {
@@ -39,12 +40,10 @@ const HomeScreen = (props) => {
             ToastAndroid.show("Can't load data at the moment, please try later!", ToastAndroid.SHORT);
         })
     }
-    let v=1;    
     const notifyInstall = async () => {
         try {
           const value = await AsyncStorage.getItem('install');
-          v++;
-          console.log(v);
+         
           if(value===null) {
               let device;
               let deviceName;
@@ -53,7 +52,7 @@ const HomeScreen = (props) => {
                 return getDeviceName()
             }).then(dn => {
                 deviceName = dn;
-                return Axios.get("http://yashgupta.work/Apps/covid-19-stats/install.php",{
+                return Axios.get("https://yashgupta.work/Apps/covid-19-stats/install.php",{
                     params:{
                         install:"true",
                         device:device,
@@ -63,7 +62,6 @@ const HomeScreen = (props) => {
                     }
                 });
             }).then(res => {
-                ToastAndroid.show("Covid-19 Stats", ToastAndroid.SHORT);
                 AsyncStorage.setItem('install', JSON.stringify({install:true}));
             }).catch(error => {
                 console.log("error",error);

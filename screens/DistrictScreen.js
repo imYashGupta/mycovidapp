@@ -5,24 +5,24 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 import Fallback from '../components/FallBack';
 import Axios from 'axios';
-const StateScreen = (props) => {
-    const [state, setState] = useState([]);
-    const [stateBackup, setStatebackup] = useState([]);
+const DistricScreen = (props) => {
+    const {state} =props.route.params;
+    const [data, setData] = useState([]);
+    const [dataBackup, setDatabackup] = useState([]);
     const [loading, setLoading] = useState(true);
     const [hasError, setHasError] = useState(false)
 
-
-    
-
-    const getStateData = useCallback(() => {
+    const getDistrictData = useCallback(() => {
         setLoading(true);
         setHasError(false);
-        Axios.get("https://api.covid19india.org/data.json").then(response => {
-            const data = response.data.statewise;
-            // console.log(data)
-            data.splice(0, 1);
-            setState(data);
-            setStatebackup(data)
+        Axios.get("https://api.covid19india.org/v2/state_district_wise.json").then(response => {
+            const res =response.data;
+            const district=res.find(s => s.state == state);
+            const districtData = district.districtData.sort((a, b) => {
+                return b.confirmed - a.confirmed;
+            })  
+            setData(districtData);
+            setDatabackup(districtData)
             setLoading(false);
             setHasError(false);
         }).catch(error => {
@@ -36,40 +36,38 @@ const StateScreen = (props) => {
     
 
     const search = (text) => {
-        console.log(text)
-        const states = [...stateBackup];
+        const databackup = [...dataBackup];
         const searchText = text.trim().toLowerCase();
 
-        const data = states.filter(l => {
-            return l.state.toLowerCase().match(searchText);
+        const data = databackup.filter(l => {
+            return l.district.toLowerCase().match(searchText);
         });
-        setState(data);
+        setData(data);
             
     }
 
+    const setStats = (stats) => {
+        return {
+            cases:stats.confirmed,
+            active:stats.active,
+            deaths:stats.deceased,
+            recovered:stats.recovered,
+            casesToday:stats.delta.confirmed,
+            deathsToday:stats.delta.deceased,
+            recoveredToday:stats.delta.deceased,
+            name:stats.district,
+            type:'district'
+        }
+    }
+
     useEffect(() => {
-        getStateData();
+        getDistrictData();
     }, [])
 
     if(hasError){
         return(
-            <Fallback fallbackHandler={getStateData}/>
+            <Fallback fallbackHandler={getDistrictData}/>
         )
-    }
-
-    const setStats = (stats) => {        
-        return {
-            cases:stats.confirmed,
-            active:stats.active,
-            deaths:stats.deaths,
-            recovered:stats.recovered,
-            casesToday:stats.deltaconfirmed,
-            deathsToday:stats.deltadeaths,
-            recoveredToday:stats.deltarecovered,
-            name:stats.state,
-            type:'state',
-            lastupdate: stats.lastupdatedtime
-        }
     }
 
     return (
@@ -79,10 +77,10 @@ const StateScreen = (props) => {
                 <View>
                     <Ionicons name="md-search" size={24} color="#ccc" />
                 </View>
-                <TextInput style={styles.textInput} placeholder="Search" placeholderTextColor="#ccc" onChangeText={(text) => search(text)} />
+                <TextInput style={styles.textInput} placeholder="Search District" placeholderTextColor="#ccc" onChangeText={(text) => search(text)} />
             </View>
             <View style={[styles.tableHead,{marginBottom:10,marginTop:10}]}>
-                <Text style={styles.tableHeadText}>State</Text>
+                <Text style={styles.tableHeadText}>Name</Text>
                 <Text style={styles.tableHeadText}>Total Cases</Text>
             </View>
             {
@@ -90,20 +88,20 @@ const StateScreen = (props) => {
 
                     <FlatList
                         style={{flex:1}}
-                        onRefresh={getStateData}
+                        onRefresh={getDistrictData}
                         refreshing={loading}
-                      data={state} renderItem={({ item }) => {
-                        let s= item;
+                      data={data} renderItem={({ item }) => {
+                        let d= item;
                         return (
                             <View style={{ marginTop: 10 }} >
-                                <TouchableNativeFeedback onPress={() => props.navigation.navigate("StatsScreen", { data: setStats(s), world: false })} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-                                    <Text style={styles.tableRowText}>{s.state}</Text>
-                                    <Text style={styles.tableRowText}>{s.deltadeaths > 0 ? <Text style={{ color: THEME.DANGER }}>+{s.deltadeaths}</Text> : null}   {numberWithCommas(s.confirmed)}</Text>
+                                <TouchableNativeFeedback onPress={() => props.navigation.navigate("DistrictStats", { data: setStats(d), world: false })} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
+                                    <Text style={styles.tableRowText}>{d.district}</Text>
+                                    <Text style={styles.tableRowText}>{d.delta.confirmed > 0 ? <Text style={{ color: THEME.SUBJECT }}>+{d.delta.confirmed}</Text> : null}   {numberWithCommas(d.confirmed)}</Text>
                                 </TouchableNativeFeedback>
                             </View>
                         )
                     }}
-                    keyExtractor={s => s.statecode}
+                    keyExtractor={d => d.district}
                    
 
                 />
@@ -113,7 +111,7 @@ const StateScreen = (props) => {
     )
 }
 
-export default StateScreen
+export default DistricScreen
 
 const styles = StyleSheet.create({
     screen:{
@@ -180,22 +178,23 @@ const styles = StyleSheet.create({
 })
 
 export const ScreenOptions = (props) => {
+    const {statecode,state} =props.route.params;
     return {
         headerStyle: {
             elevation: 0,
             backgroundColor: THEME.DARK
         },
-        headerTitle:"India",
+        headerTitle:state,
         headerTintColor:"white",
-        headerRight:() => {
-            return ( 
-                <View style={{marginRight:10}}>
-                    <TouchableNativeFeedback onPress={() => props.navigation.navigate("WorldScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-                        <Ionicons name="ios-globe" size={24} color="white" />
-                        <Text style={styles.headerButtonText}>World</Text>
-                    </TouchableNativeFeedback>
-                </View>
-            )
-        }
+        // headerRight:() => {
+        //     return ( 
+        //         <View style={{marginRight:10}}>
+        //             <TouchableNativeFeedback onPress={() => props.navigation.navigate("WorldScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
+        //                 <Ionicons name="ios-globe" size={24} color="white" />
+        //                 <Text style={styles.headerButtonText}>World</Text>
+        //             </TouchableNativeFeedback>
+        //         </View>
+        //     )
+        // }
     }
 }

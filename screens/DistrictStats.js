@@ -9,7 +9,6 @@ import {  TransitionPresets  } from '@react-navigation/stack';
 
 const StatsScreen = (props) => {
     const {data} = props.route.params;
-
     const cases = data.cases;
     const active = data.active;
     const recovered = data.recovered;
@@ -56,8 +55,6 @@ const StatsScreen = (props) => {
         }
         return;
     }
-
-    
     return (
         <View style={styles.screen}>
             <ScrollView>

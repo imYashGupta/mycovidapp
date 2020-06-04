@@ -1,7 +1,8 @@
 import React from 'react'
 import { StyleSheet, Text, View, Button } from 'react-native'
 
-const TestScreen = () => {
+const TestScreen = (props) => {
+    console.log("props",props.data)
     return (
         <View>
             <Text>Test Screen</Text>

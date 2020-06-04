@@ -55,6 +55,24 @@ const StateScreen = (props) => {
             <Fallback fallbackHandler={getStateData}/>
         )
     }
+
+    const setStats = (stats) => {        
+        return {
+            cases:stats.cases,
+            active:stats.active,
+            deaths:stats.deaths,
+            recovered:stats.recovered,
+            casesToday:stats.todayCases,
+            deathsToday:stats.todayDeaths,
+            recoveredToday:stats.todayRecovered,
+            name:stats.country,
+            type:'country',
+            lastupdate: stats.updated,
+            deathsPerOneMillion:stats.deathsPerOneMillion,
+            testsPerOneMillion:stats.testsPerOneMillion
+        }
+    }
+
     return (
         <View style={styles.screen}>
             {/* <ActivityIndicator size="large" color={THEME.CONDITION} /> */}
@@ -80,7 +98,7 @@ const StateScreen = (props) => {
                             let s = item;
                             return (
                                 <View style={{ marginTop: 10 }} >
-                                    <TouchableNativeFeedback onPress={() => props.navigation.navigate("StatsScreen", { data: s,world:true})} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
+                                    <TouchableNativeFeedback onPress={() => props.navigation.navigate("StatsScreen", { data: setStats(s),world:true})} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
                                         <View style={{flexDirection:"row"}}>
                                             <Image source={{ uri: s.countryInfo.flag }} style={{ width: 20, height: 20,marginRight:10 }} />
                                             <Text style={styles.tableRowText}>{s.country}</Text>
