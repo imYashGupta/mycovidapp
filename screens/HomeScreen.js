@@ -10,6 +10,8 @@ import HeaderButton from "../components/HeaderButton";
 import moment from "moment";
 import Fallback from '../components/FallBack';
 import AsyncStorage from '@react-native-community/async-storage';
+import IconBadge from 'react-native-icon-badge';
+
 import { getBrand,getDevice,getDeviceName,getModel } from 'react-native-device-info';
 
 const screenWidth = Dimensions.get('window').width;
@@ -249,9 +251,10 @@ export const ScreenOptions = (props) => {
       },
       headerTitle:"COVID-19 INDIA Stats",
       headerTintColor:"white",
-      headerRight:() => {
+      headerRight:() => { 
         return (
             <HeaderButtons HeaderButtonComponent={HeaderButton}>
+                <Item title="Cart" iconName={"ios-notifications-outline"} onPress={() => props.navigation.navigate("UpdatesScreen")} />
                 <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("AboutScreen")} />
             </HeaderButtons>
         )

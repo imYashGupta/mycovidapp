@@ -9,6 +9,7 @@ import EssentialsScreen, { ScreenOptions as EssentialsScreenOptions } from "../s
 import AboutScreen, { ScreenOptions as AboutScreenOptions} from '../screens/AboutScreen';
 import DistrictScreen, { ScreenOptions as DistrictScreenOptions} from '../screens/DistrictScreen';
 import DistrictStats, { ScreenOptions as DistrictStatsOptions} from '../screens/DistrictStats';
+import UpdatesScreen, { ScreenOptions as UpdatesScreenOptions} from '../screens/UpdatesScreen';
 
 //screens
 import HomeScreen,{ScreenOptions as HomeScreenOptions} from "../screens/HomeScreen";
@@ -35,6 +36,7 @@ const Navigation = () => {
                 <Stack.Screen name="AboutScreen" component={AboutScreen} options={AboutScreenOptions} />
                 <Stack.Screen name="DistrictScreen" component={DistrictScreen} options={DistrictScreenOptions} />
                 <Stack.Screen name="DistrictStats" component={DistrictStats} options={DistrictStatsOptions} />
+                <Stack.Screen name="UpdatesScreen" component={UpdatesScreen} options={UpdatesScreenOptions} />
 
             </Stack.Navigator>
         </NavigationContainer>
