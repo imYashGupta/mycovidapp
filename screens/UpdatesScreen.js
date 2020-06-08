@@ -2,18 +2,22 @@ import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, View, ActivityIndicator, FlatList } from 'react-native'
 import { THEME } from '../util/THEME';
 import Axios from 'axios';
-import moment from "moment";
+import Fallback from '../components/FallBack';
 
 const UpdatesScreen = () => {
     const [updates, setUpdates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hasError, setHasError] = useState(false)
+
     const getUpdates = () => {
         setLoading(true);
+        setHasError(false);
         Axios.get("https://api.covid19india.org/updatelog/log.json").then(response =>{
             setLoading(false)
             setUpdates(response.data.reverse());
         }).catch(error => {
             setLoading(false)
+            setHasError(true);
             console.log(error);
         })
     }
@@ -49,7 +53,11 @@ const UpdatesScreen = () => {
         }
     }
 
-    
+    if (hasError) {
+        return(
+            <Fallback fallbackHandler={getUpdates}/>
+        )        
+    }
 
     return (
         <View style={styles.screen}>
