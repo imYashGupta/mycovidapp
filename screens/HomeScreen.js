@@ -10,7 +10,8 @@ import HeaderButton from "../components/HeaderButton";
 import moment from "moment";
 import Fallback from '../components/FallBack';
 import AsyncStorage from '@react-native-community/async-storage';
-import IconBadge from 'react-native-icon-badge';
+// import IconBadge from 'react-native-icon-badge';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { getBrand,getDevice,getDeviceName,getModel } from 'react-native-device-info';
 
@@ -24,6 +25,11 @@ const HomeScreen = (props) => {
     const [loading, setLoading] = useState(true);
     const [firstLoad, setFirstLoad] = useState(true);
     const [hasError, setHasError] = useState(false)
+
+    const [date, setDate] = useState(new Date(1598051730000));
+    const [mode, setMode] = useState('date');
+    const [show, setShow] = useState(false);
+
     const fetchData = () => {
  
         
@@ -148,6 +154,7 @@ const HomeScreen = (props) => {
                         { key: "chart", width: screenWidth-20, height: 260, borderRadius: 10 },
                     ]}
                 >
+                    
                     <Chart data={getChartData()} />
                 </SkeletonContent>
                     <SkeletonContent
@@ -174,10 +181,10 @@ const HomeScreen = (props) => {
                         {
                             loading ? null : 
                                 <View style={styles.cards}>
-                                    <Card color={THEME.SUBJECT} title="Confirmed" value={numberWithCommas(data.confirmed)} desc={"+" + numberWithCommas(data.deltaconfirmed)} />
-                                    <Card color={THEME.EQUIPMENT} title="Active" value={numberWithCommas(data.active)} desc="" />
-                                    <Card color={THEME.GREEN} title="Recovered" value={numberWithCommas(data.recovered)} desc={"+" + numberWithCommas(data.deltarecovered)} />
-                                    <Card color={THEME.DANGER} title="Deceased" value={numberWithCommas(data.deaths)} desc={"+" + numberWithCommas(data.deltadeaths)} />
+                                    <Card color={THEME.SUBJECT} title="Confirmed" value={data.confirmed} desc={data.deltaconfirmed} />
+                                    <Card color={THEME.EQUIPMENT} title="Active" value={data.active} desc="" />
+                                    <Card color={THEME.GREEN} title="Recovered" value={data.recovered} desc={data.deltarecovered} />
+                                    <Card color={THEME.DANGER} title="Deceased" value={data.deaths} desc={data.deltadeaths} />
                                 <Card color={THEME.DANGER} custom={true} navigation={() => props.navigation.navigate("StateScreen")}>
                                         <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
                                             <View style={{alignItems:"center"}}>
@@ -239,7 +246,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'flex-start',
-        marginTop:5,
+        marginTop:10,
 
     }
 })
@@ -254,8 +261,8 @@ export const ScreenOptions = (props) => {
       headerRight:() => { 
         return (
             <HeaderButtons HeaderButtonComponent={HeaderButton}>
-                <Item title="Cart" iconName={"ios-notifications-outline"} onPress={() => props.navigation.navigate("UpdatesScreen")} />
-                <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("AboutScreen")} />
+                <Item title="Cart" iconName={"ios-notifications-outline"} onPress={() => props.navigation.navigate("TestScreen")} />
+                <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("TimelineScreen")} />
             </HeaderButtons>
         )
     }

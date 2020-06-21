@@ -5,32 +5,52 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 import Fallback from '../components/FallBack';
 import Axios from 'axios';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 const DistricScreen = (props) => {
-    const {state} =props.route.params;
+    const {districts,day} =props.route.params;
     const [data, setData] = useState([]);
     const [dataBackup, setDatabackup] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [hasError, setHasError] = useState(false)
-
-    const getDistrictData = useCallback(() => {
-        setLoading(true);
-        setHasError(false);
-        Axios.get("https://api.covid19india.org/v2/state_district_wise.json").then(response => {
-            const res =response.data;
-            const district=res.find(s => s.state == state);
-            const districtData = district.districtData.sort((a, b) => {
-                return b.confirmed - a.confirmed;
-            })  
-            setData(districtData);
-            setDatabackup(districtData)
-            setLoading(false);
-            setHasError(false);
-        }).catch(error => {
-            setHasError(true);      
+    const formatData = () => {
+        const arr = [];
+        for(let district in districts){
+            arr.push({
+                district:district,
+                total:{
+                    confirmed:districts[district]?.total?.confirmed==undefined ? 0 : districts[district]?.total?.confirmed,
+                    deceased:districts[district]?.total?.deceased==undefined ? 0 : districts[district]?.total?.deceased,
+                    recovered:districts[district]?.total?.recovered==undefined ? 0 : districts[district]?.total?.recovered,
+                }
+                ,delta:{
+                    confirmed:districts[district]?.delta?.confirmed==undefined ? 0 : districts[district]?.delta?.confirmed,
+                    deceased:districts[district]?.delta?.deceased==undefined ? 0 : districts[district]?.delta?.deceased,
+                    recovered:districts[district]?.delta?.recovered==undefined ? 0 : districts[district]?.delta?.recovered,
+                }
+            });
+        }
+        const sortedByTotal = arr.sort((a, b) => {
+            return b.total.confirmed - a.total.confirmed;
         });
-    }, [setLoading])
+        setData(sortedByTotal);
+        setDatabackup(sortedByTotal);
+    }
+    
     const numberWithCommas = (x) => {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    const validateNumber = (fn, defaultVal,comma) => {
+        try {
+            let n= fn();
+            if(n==undefined){
+                return defaultVal;
+            }
+            if(comma){
+                return numberWithCommas(fn());
+            }
+            return fn();
+        } catch (e) {
+            return defaultVal;
+        }
     }
 
     
@@ -46,29 +66,15 @@ const DistricScreen = (props) => {
             
     }
 
-    const setStats = (stats) => {
-        return {
-            cases:stats.confirmed,
-            active:stats.active,
-            deaths:stats.deceased,
-            recovered:stats.recovered,
-            casesToday:stats.delta.confirmed,
-            deathsToday:stats.delta.deceased,
-            recoveredToday:stats.delta.deceased,
-            name:stats.district,
-            type:'district'
-        }
+    const navigateToStats = (stats) => {
+        props.navigation.navigate("DistrictStats",{district:stats,day:day});
     }
 
     useEffect(() => {
-        getDistrictData();
+        formatData();
     }, [])
 
-    if(hasError){
-        return(
-            <Fallback fallbackHandler={getDistrictData}/>
-        )
-    }
+   
 
     return (
         <View style={styles.screen}>
@@ -83,30 +89,30 @@ const DistricScreen = (props) => {
                 <Text style={styles.tableHeadText}>Name</Text>
                 <Text style={styles.tableHeadText}>Total Cases</Text>
             </View>
-            {
-                loading ? <ActivityIndicator style={{marginTop:20}} size="large" color={THEME.GREEN} /> :
+            
 
                     <FlatList
                         style={{flex:1}}
-                        onRefresh={getDistrictData}
-                        refreshing={loading}
                       data={data} renderItem={({ item }) => {
                         let d= item;
                         return (
                             <View style={{ marginTop: 10 }} >
-                                <TouchableNativeFeedback onPress={() => props.navigation.navigate("DistrictStats", { data: setStats(d), world: false })} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
+                                <TouchableNativeFeedback onPress={() => navigateToStats(d)} style={styles.tableHead} background={TouchableNativeFeedback.Ripple("#7b819d")}>
                                     <Text style={styles.tableRowText}>{d.district}</Text>
-                                    <Text style={styles.tableRowText}>{d.delta.confirmed > 0 ? <Text style={{ color: THEME.SUBJECT }}>+{d.delta.confirmed}</Text> : null}   {numberWithCommas(d.confirmed)}</Text>
+                                    <Text style={styles.tableRowText}> <Text style={{color:THEME.SUBJECT}}>
+                                            {
+                                                d.delta.confirmed!=0 && <AntDesign name="arrowup" size={16} />  
+                                            }
+                                            {
+                                                d.delta.confirmed!=0 && validateNumber(() => d.delta.confirmed,'',true)
+                                            }
+                                        </Text> {validateNumber(() => d.total.confirmed,'0',true)}</Text>
                                 </TouchableNativeFeedback>
                             </View>
                         )
                     }}
                     keyExtractor={d => d.district}
-                   
-
                 />
-                               
-            }
         </View>
     )
 }
@@ -163,13 +169,12 @@ const styles = StyleSheet.create({
         height:30,
         justifyContent:"center",
         alignItems:"center",
-        flexDirection:"row",
         padding:10,
         paddingVertical:20
     },
     headerButtonText:{
         color:"white",
-        fontSize:18,
+        fontSize:16,
         marginLeft:10,
         fontFamily:"OpenSans-Medium"
 
@@ -178,23 +183,26 @@ const styles = StyleSheet.create({
 })
 
 export const ScreenOptions = (props) => {
-    const {statecode,state} =props.route.params;
+    const {statename,day} =props.route.params;
+
     return {
         headerStyle: {
             elevation: 0,
             backgroundColor: THEME.DARK
         },
-        headerTitle:state,
+        headerTitle:statename,
         headerTintColor:"white",
-        // headerRight:() => {
-        //     return ( 
-        //         <View style={{marginRight:10}}>
-        //             <TouchableNativeFeedback onPress={() => props.navigation.navigate("WorldScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-        //                 <Ionicons name="ios-globe" size={24} color="white" />
-        //                 <Text style={styles.headerButtonText}>World</Text>
-        //             </TouchableNativeFeedback>
-        //         </View>
-        //     )
-        // }
+        headerTitleContainerStyle:{
+            width:'50%',
+        },
+        headerRight:() => {
+            return ( 
+                <View style={{marginRight:10}}>
+                    <View   style={styles.headerButton} >
+                        <Text style={styles.headerButtonText}>{day}</Text>
+                    </View>
+                </View>
+            )
+        }
     }
 }

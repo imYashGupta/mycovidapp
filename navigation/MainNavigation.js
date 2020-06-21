@@ -10,6 +10,8 @@ import AboutScreen, { ScreenOptions as AboutScreenOptions} from '../screens/Abou
 import DistrictScreen, { ScreenOptions as DistrictScreenOptions} from '../screens/DistrictScreen';
 import DistrictStats, { ScreenOptions as DistrictStatsOptions} from '../screens/DistrictStats';
 import UpdatesScreen, { ScreenOptions as UpdatesScreenOptions} from '../screens/UpdatesScreen';
+import TimelineScreen, { ScreenOptions as TimelineScreenOptions} from '../screens/TimelineScreen';
+import TestScreen, { ScreenOptions as TestScreenOptions} from '../screens/TestScreen';
 
 //screens
 import HomeScreen,{ScreenOptions as HomeScreenOptions} from "../screens/HomeScreen";
@@ -27,7 +29,7 @@ const Navigation = () => {
                     },
                     headerTintColor:"white",
                 }
-            }>
+            }> 
                 <Stack.Screen name="Home" component={HomeScreen} options={HomeScreenOptions} />
                 <Stack.Screen name="StateScreen" component={StateScreen} options={StateScreenOptions} />
                 <Stack.Screen name="WorldScreen" component={WorldScreen} options={WorldScreenOptions} />
@@ -37,7 +39,9 @@ const Navigation = () => {
                 <Stack.Screen name="DistrictScreen" component={DistrictScreen} options={DistrictScreenOptions} />
                 <Stack.Screen name="DistrictStats" component={DistrictStats} options={DistrictStatsOptions} />
                 <Stack.Screen name="UpdatesScreen" component={UpdatesScreen} options={UpdatesScreenOptions} />
-
+                <Stack.Screen name="TimelineScreen" component={TimelineScreen} options={TimelineScreenOptions} />
+                <Stack.Screen name="TestScreen" component={TestScreen} options={{headerShown:false}} />
+ 
             </Stack.Navigator>
         </NavigationContainer>
     );

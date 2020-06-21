@@ -1,31 +1,50 @@
-import React from 'react'
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React,{useCallback,useState,useEffect} from 'react'
+import { StyleSheet, Text, View, ScrollView,ActivityIndicator,FlatList } from 'react-native';
 import { THEME } from '../util/THEME';
 import Chart from "../components/PieChart/Chart";
 import Card from "../components/CardStyle";
 import moment from "moment";
 import {  TouchableNativeFeedback } from 'react-native-gesture-handler';
 import {  TransitionPresets  } from '@react-navigation/stack';
+import Axios from 'axios';
+import InfoCard from '../components/InfoCard';
 
 const StatsScreen = (props) => {
-    const {data} = props.route.params;
-    const cases = data.cases;
-    const active = data.active;
-    const recovered = data.recovered;
-    const deaths = data.deaths;
-    const confirmedToday = data.casesToday;
-    const deathToday = data.deathsToday;
-    const recoverdToday = data.recoveredToday;
+    const {district,district:{total,delta}} = props.route.params;
+    let active  = total.confirmed - (total.recovered+total.deceased);
 
-    const numberWithCommas = (x) => {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
+    const [hasError, setHasError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [resources, setResources] = useState([]);
+    console.log(active);
+    const capitalizeFirstLetter =(string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      
+    const getStateData = useCallback(() => {
+        console.log("res")
+        setHasError(false);
+        Axios.get("https://api.covid19india.org/resources/resources.json").then(response => {
+            const resources = response.data.resources;
+            const cityData = resources.filter(l => {
+                return l.city.match(capitalizeFirstLetter(district.district));
+            });
+            setResources(cityData);
+            setHasError(false);
+            setLoading(false);
 
-    const total = parseInt(active) + parseInt(recovered) + parseInt(deaths);
+        }).catch(error => {
+            setHasError(true);
+            setLoading(false);
+
+        });
+    }, [setLoading]);
+
+    const subtotal = parseInt(active) + parseInt(total.recovered) + parseInt(total.deceased);
     const getChartData = () => {
-        let activePer = parseInt(active) / parseInt(total) * 100;
-        let recoveredPer = parseInt(recovered) / parseInt(total) * 100;
-        let deathsPer = parseInt(deaths) / parseInt(total) * 100;
+        let activePer = parseInt(active) / parseInt(subtotal) * 100;
+        let recoveredPer = parseInt(total.recovered) / parseInt(subtotal) * 100;
+        let deathsPer = parseInt(total.deceased) / parseInt(subtotal) * 100;
         return [
             {
                 name: "Active",
@@ -45,6 +64,10 @@ const StatsScreen = (props) => {
         ];
     }
 
+    useEffect(() => {
+       getStateData()
+    }, [])
+
     const getDate = () => {
         if (data.type==='state') {
             const strDateTime=data.lastupdate;
@@ -59,47 +82,37 @@ const StatsScreen = (props) => {
         <View style={styles.screen}>
             <ScrollView>
                 {
-                    total!=0 ?
+                    subtotal!=0 ?
                     <View style={styles.chartContainer}>
                         <Chart data={getChartData( )}/>
                     </View> : null
                 }
                 <View style={styles.cards}>
-                    <Card color={THEME.SUBJECT} title="Confirmed" value={numberWithCommas(cases)} desc={"+" + confirmedToday} />
-                    <Card color={THEME.EQUIPMENT} title="Active" value={numberWithCommas(active)} desc="" />
-                    <Card color={THEME.GREEN} title="Recovered" value={numberWithCommas(recovered)} desc={data.type==='country' ? "" : "+" + recoverdToday} />
-                    <Card color={THEME.DANGER} title="Death" value={numberWithCommas(deaths)} desc={"+" + deathToday} />
-                    { data.type==='country' ?
-                        <Card color={THEME.CONDITION} title="Test Ratio" value={numberWithCommas(data.testsPerOneMillion)} desc={" Tests per millon"} />
-                        : null
-                    }
-                    {data.type==='country' ? 
-                        <Card color={THEME.TAG} title="Death Ratio" value={numberWithCommas(data.deathsPerOneMillion)} desc={" Deaths per millon"} />
-                        : null
-                    }
-                    {
-                    data.type==='state' ?
-                    <View style={{backgroundColor:"transparent",width:"100%"}}>
-                        <Card color={THEME.DANGER} containerStyle={{ width: "100%" }} custom={true} navigation={() => props.navigation.navigate("EssentialsScreen",{state:data.name})} >
-                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                    <Text style={{ fontSize: 22, color: THEME.CONDITION,fontFamily:"OpenSans-Medium"}}>Help & Essentials Information</Text>
-                                    <Text style={{ fontSize: 14, color: "white",paddingHorizontal:20,textAlign:"center",marginTop:10,fontFamily:"OpenSans-Medium" }}>Free Food,Covid-19 Labs and Hospitals.</Text>
-                            </View>
-                        </Card>
-                       
-                    </View>
-                    :null}
+                    <Card color={THEME.SUBJECT} title="Confirmed" value={(total.confirmed)} desc={delta.confirmed} />
+                    <Card color={THEME.EQUIPMENT} title="Active" value={(active)} desc="" />
+                    <Card color={THEME.GREEN} title="Recovered" value={(total.recovered)} desc={delta.recovered} />
+                    <Card color={THEME.DANGER} title="Death" value={(total.deceased)} desc={delta.deceased} />
                 </View>
+                <View style={styles.cardBg}>
+                    {/* only show header when there is atleast one item */}
+                    {resources.length > 0 &&
+                        <View style={styles.resourcesheader}>
+                            <Text style={styles.resourcesheaderText}>
+                                Help & Essentials Information
+                            </Text>
+                        </View>
+                    }
                 {
-                data.type==='district' ? null :    
-                <View style={styles.timestamp}>
-                    <Text style={styles.timestampText}>
-                        Last updated: {
-                            getDate()
-                        }
-                    </Text>
-                </View>
+                    loading ? <View style={{flex:1,justifyContent:"center"}}>
+                        <ActivityIndicator size="large" color={THEME.GREEN} />
+                        </View> : 
+                        resources.map((item,i) => {
+                            return (
+                                <InfoCard key={i.toString()} data={item} />
+                            )
+                        })
                 }
+                </View>
             </ScrollView>
         </View>
     )
@@ -143,30 +156,61 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginLeft: 10,
         fontFamily:"OpenSans-Medium"
+    },cardBg: {
+        backgroundColor: THEME.DARK,
+        flex: 1,
+        // padding: 10
+        paddingHorizontal:10
+    },
+    resourcesheader:{
+        height:40,
+        width:'100%',
+        backgroundColor:THEME.CARD,
+        elevation:10,
+        marginBottom:10,
+        justifyContent:"center",
+        alignItems:"center",
+        borderRadius:5
+    },
+    resourcesheaderText:{
+        color:THEME.CONDITION,
+        fontSize:16
+    },
+    headerButton:{
+        height:30,
+        justifyContent:"center",
+        alignItems:"center",
+        padding:10,
+        paddingVertical:20
+    },
+    headerButtonText:{
+        color:"white",
+        fontSize:16,
+        marginLeft:10,
+        fontFamily:"OpenSans-Medium"
+
     }
 })
 
 export const ScreenOptions = (props) => {
-    const { data } = props.route.params;
-    const title = data.name;
+    const {district,day} = props.route.params;
     return {
         headerStyle:{
             elevation:0,
             backgroundColor:THEME.DARK
         },
-        headerTitle: title,
+        headerTitle: district.district,
         ...TransitionPresets.ModalSlideFromBottomIOS,
-        headerRight: () => {
-            if(data.type==='state'){
-                return (
-                    <View style={{ marginRight: 10 }}>
-                    <TouchableNativeFeedback onPress={() => props.navigation.navigate("DistrictScreen",{state:data.name})} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-                        <Text style={styles.headerButtonText}>Districts</Text>
-                    </TouchableNativeFeedback>
+        headerRight:() => {
+            return ( 
+                <View style={{marginRight:10}}>
+                    <View   style={styles.headerButton} >
+                        <Text style={styles.headerButtonText}>{day}</Text>
+                    </View>
                 </View>
             )
-            }
         }
+       
     }
 }
 

@@ -68,16 +68,16 @@ const StatsScreen = (props) => {
                     </View> : null
                 }
                 <View style={styles.cards}>
-                    <Card color={THEME.SUBJECT} title="Confirmed" value={numberWithCommas(cases)} desc={"+" + confirmedToday} />
-                    <Card color={THEME.EQUIPMENT} title="Active" value={numberWithCommas(active)} desc="" />
-                    <Card color={THEME.GREEN} title="Recovered" value={numberWithCommas(recovered)} desc={data.type==='country' ? "" : "+" + recoverdToday} />
-                    <Card color={THEME.DANGER} title="Death" value={numberWithCommas(deaths)} desc={"+" + deathToday} />
+                    <Card color={THEME.SUBJECT} title="Confirmed" value={cases} desc={confirmedToday} />
+                    <Card color={THEME.EQUIPMENT} title="Active" value={active} desc="" />
+                    <Card color={THEME.GREEN} title="Recovered" value={recovered} desc={data.type==='country' ? "" : recoverdToday} />
+                    <Card color={THEME.DANGER} title="Death" value={deaths} desc={"+" + deathToday} />
                     { data.type==='country' ?
-                        <Card color={THEME.CONDITION} title="Test Ratio" value={numberWithCommas(data.testsPerOneMillion)} desc={" Tests per millon"} />
+                        <Card color={THEME.CONDITION} title="Test Ratio" value={data.testsPerOneMillion} desc={"Tests per millon"} />
                         : null
                     }
                     {data.type==='country' ? 
-                        <Card color={THEME.TAG} title="Death Ratio" value={numberWithCommas(data.deathsPerOneMillion)} desc={" Deaths per millon"} />
+                        <Card color={THEME.TAG} title="Death Ratio" value={data.deathsPerOneMillion} desc={" Deaths per millon"} />
                         : null
                     }
                     {

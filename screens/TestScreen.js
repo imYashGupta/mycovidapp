@@ -1,16 +1,14 @@
 import React from 'react'
-import { StyleSheet, Text, View, Button } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import AnimateNumber from 'react-native-animate-number'
 
-const TestScreen = (props) => {
-    console.log("props",props.data)
+export default function TestScreen() {
     return (
         <View>
-            <Text>Test Screen</Text>
-            <Button title="home"  />
+            <AnimateNumber value={100} formatter={(val) => {return parseInt(val).toFixed(0)}}/>
+
         </View>
     )
 }
-
-export default TestScreen
 
 const styles = StyleSheet.create({})
