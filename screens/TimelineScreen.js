@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react'
-import { StyleSheet, Text, View, ActivityIndicator,FlatList,ToastAndroid,ScrollView } from 'react-native'
+import { StyleSheet, Text, View, ActivityIndicator,ToastAndroid,ScrollView ,StatusBar} from 'react-native'
 import { THEME } from '../util/THEME';
 import DateSlider from '../components/DateSlider';
 import Axios from 'axios';
@@ -7,8 +7,12 @@ import moment from "moment";
 import Card from "../components/CardStyleX";
 import ExpandableRow from '../components/ExpandableRow';
 import { STATE_NAMES } from "../util/states"; 
-const TODAY_DATE=moment().format('YYYY-MM-DD');
+import { HeaderButtons, Item } from "react-navigation-header-buttons";
+import HeaderButton from "../components/HeaderButton";
+import AsyncStorage from '@react-native-community/async-storage';
+import Fallback from '../components/FallBack';
 
+const TODAY_DATE=moment().format('YYYY-MM-DD');
 export default function TimeSeries(props) {
     const [dates, setDates] = useState([]);
     const [total, setTotal] = useState({});
@@ -16,19 +20,63 @@ export default function TimeSeries(props) {
     const [loading, setLoading] = useState(true)
     const [dateLoading, setDateLoading] = useState(true);
     const [date, setDate] = useState(TODAY_DATE);
+    const [hasError, setHasError] = useState(false)
+
+    const notifyInstall = async () => {
+        try {
+          const value = await AsyncStorage.getItem('install');
+         
+          if(value===null) {
+              let device;
+              let deviceName;
+            getDevice().then(d => {
+                device= d;
+                return getDeviceName()
+            }).then(dn => {
+                deviceName = dn;
+                return Axios.get("https://yashgupta.work/Apps/covid-19-stats/install.php",{
+                    params:{
+                        install:"true",
+                        device:device,
+                        brand:getBrand(),
+                        name:deviceName,
+                        model:getModel(),
+                    }
+                });
+            }).then(res => {
+                AsyncStorage.setItem('install', JSON.stringify({install:true}));
+            }).catch(error => {
+                console.log("error",error);
+                //setHasError(true);
+
+            })
+          }else{
+            console.log("regular install");
+          }
+        } catch(e) {
+          // error reading value
+        }
+      }
 
     const getTimeSeries = () => {
+        setHasError(false);
         Axios.get("https://api.covid19india.org/v3/min/timeseries.min.json").then(response => {
             let timeSeries=Object.keys(response.data['TT']);
             setDates(timeSeries);
             setDateLoading(false)
         }).catch(error => {
-            console.log(error);
+            console.log(error)
+            setLoading(false);
+            setHasError(true);
         });
     }
 
     const getData = (reqDate) => {
+        setHasError(false);
         setDate(reqDate);
+        if(reqDate==TODAY_DATE){
+            ToastAndroid.show("Today's actual data will update at midnight!",ToastAndroid.LONG);
+        }
         const url = reqDate==TODAY_DATE ? "data.min.json" : `data-${reqDate}.min.json`;
         Axios.get("https://api.covid19india.org/v3/min/"+url).then(response => {
             const arr = [];
@@ -61,7 +109,11 @@ export default function TimeSeries(props) {
             setData(sorted);
             setLoading(false);
            
-        }).catch(e => console.log(e))
+        }).catch(e => {
+            console .log(e)
+            setLoading(false);
+            setHasError(true);
+        })
     }
 
   
@@ -99,16 +151,22 @@ export default function TimeSeries(props) {
             return;
         }
     }
-   
-    useEffect(() => {
-        getTimeSeries();
-    }, []);
-
-    useEffect(() => {
-        getData(TODAY_DATE);
-    }, []);
+    
     
 
+    useEffect(() => {
+        getTimeSeries();
+        getData(TODAY_DATE);
+        notifyInstall();
+    }, []);
+
+    
+
+    if(hasError){
+        return(
+            <Fallback fallbackHandler={() => getData(TODAY_DATE)}/>
+        )
+    }
     
     if(loading || dateLoading) {
         return (
@@ -117,9 +175,15 @@ export default function TimeSeries(props) {
             </View>
         )
     }
-
+   
     return (
         <View style={styles.screen}>
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor={THEME.CARD}
+            />
+
+
             <View>
                 <DateSlider dates={dates} onDateChange={(e) => dateChange(e)} />
             </View>
@@ -129,46 +193,14 @@ export default function TimeSeries(props) {
                 <Text style={{color:"white"}}>{date}</Text>
             </View> */}
             <View style={styles.cards}>
-                <Card containerStyle={{}}  color={THEME.SUBJECT} title="Confirmed" value={total.total.confirmed} desc={total.delta.confirmed} />
-                <Card color={THEME.EQUIPMENT} title="Tested" value={total.total.tested} desc={total.delta.tested} />
-                <Card color={THEME.GREEN} title="Recovered" value={total.total.recovered} desc={total.delta.recovered} />
-                <Card color={THEME.DANGER} title="Deaths" value={total.total.deceased} desc={total.delta.deceased} />
+                <Card style={{marginRight:5,marginLeft:5}}  color={THEME.SUBJECT} title="Confirmed" value={total.total.confirmed} desc={total.delta.confirmed} />
+                <Card style={{marginRight:5}} color={THEME.EQUIPMENT} title="Tested" value={total.total.tested} desc={total.delta.tested} />
+                <Card  style={{marginRight:5,marginLeft:5,marginVertical:5}} color={THEME.GREEN} title="Recovered" value={total.total.recovered} desc={total.delta.recovered} />
+                <Card  style={{marginRight:5,marginVertical:5}} color={THEME.DANGER} title="Deaths" value={total.total.deceased} desc={total.delta.deceased} />
             </View>
             <View style={styles.tableConatiner}>
                 
-                <View
-                >
-                    {/* <FlatList
-                        ListHeaderComponent={() => {
-                            return (
-                                <View style={[styles.tableHead]}>
-                                <Text style={[styles.tableHeadText,{color:THEME.SUBJECT}]}>Confirmed</Text>
-                                <Text style={styles.tableHeadText}>Recovered</Text>
-                                <Text style={[styles.tableHeadText,{color:THEME.DANGER}]}>Deaths</Text>
-                            </View>
-                            )
-                        }}
-                        stickyHeaderIndices={[0]}
-                        contentContainerStyle={{ paddingBottom: 10}}
-                        keyExtractor={item => item.name}
-                        renderItem={(item => {
-                            if(item.item.name!='UN' && item.item.name!='TT'){
-                                return(
-                                    <ExpandableRow 
-                                        navigate={() => navigateToDistrict(item.item)}
-                                        name={STATE_NAMES[item.item.name]} 
-                                        confirmed={validateNumber(() => item.item.total.confirmed,'0')}
-                                        recovered={validateNumber(() => item.item.total.recovered,'0')}
-                                        deaths={validateNumber(() => item.item.total.deceased,'0')}
-                                        todayConfirmed={validateNumber(() => item.item.delta.confirmed,'0')}
-                                        todayRecovered={validateNumber(() => item.item.delta.recovered,'0')}
-                                        todayDeaths={validateNumber(() => item.item.delta.deceased,'0')}
-                                    />
-                                )
-                            }
-                        })}
-                        data={data}
-                    /> */}
+                <View>
                     <View style={[styles.tableHead]}>
                                 <Text style={[styles.tableHeadText,{color:THEME.SUBJECT}]}>Confirmed</Text>
                                 <Text style={styles.tableHeadText}>Recovered</Text>
@@ -214,7 +246,7 @@ const styles = StyleSheet.create({
     },
     tableConatiner:{
         marginHorizontal:10,
-        flex:1
+        flex:1,
     },  
     tableHead:{
         height:40,
@@ -241,9 +273,18 @@ const styles = StyleSheet.create({
 
     },
 })
-export const ScreenOptions = () => {
+export const ScreenOptions = (props) => {
     
     return {
-        headerTitle:"Time Series"
+        headerTitle:"COVID-19 INDIA Stats",
+        headerRight:() => { 
+            return (
+                <HeaderButtons HeaderButtonComponent={HeaderButton}>
+                    <Item title="Cart" iconName={"ios-globe"} onPress={() => props.navigation.navigate("WorldScreen")} />
+                    <Item title="Cart" iconName={"ios-notifications-outline"} onPress={() => props.navigation.navigate("UpdatesScreen")} />
+                    <Item title="Cart" iconName={"ios-information-circle-outline"} onPress={() => props.navigation.navigate("AboutScreen")} />
+                </HeaderButtons>
+            )
+        }
     }
 }

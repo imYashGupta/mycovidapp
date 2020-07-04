@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, View, TouchableNativeFeedback } from 'react-native'
+import { StyleSheet, Text, View, TouchableNativeFeedback, TouchableWithoutFeedback } from 'react-native'
 import { THEME } from '../util/THEME'
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AnimateNumber from 'react-native-animate-number'
@@ -39,16 +39,8 @@ const CardStyle = (props) => {
 
     return (
         <View style={[styles.cmp,props.containerStyle]}>
-            {
-            props.children!=undefined ?  
-                <TouchableNativeFeedback onPress={() => props.navigation ? props.navigation() : false}>
-                    <View style={[styles.block,props.style]}>
-                        {props.children}
-                    </View>
-                </TouchableNativeFeedback>
-            :
-            <TouchableNativeFeedback >
-                <View style={styles.block}>
+            <TouchableWithoutFeedback >
+                <View style={[styles.block,props.style]}>
                     <Text style={[styles.title,{color:props.color}]}>{props.title}</Text>
                     <Text style={styles.value}>
                     {/* <AnimateNumber value={parseInt(validateNumber(() => props.value,'0',false)).toFixed(0)} formatter={(val) => parseInt(validateNumber(() => val,'0',false)).toFixed(0) }/> */}
@@ -56,8 +48,7 @@ const CardStyle = (props) => {
                     </Text>
                     <Text style={[styles.desc, { color: props.color }]}>{showArrow(props.desc)} {validateNumber(() => props.desc,'0',true)}</Text>
                 </View>
-            </TouchableNativeFeedback>
-            }
+            </TouchableWithoutFeedback>
         </View>
     )
 }
@@ -74,7 +65,6 @@ const styles = StyleSheet.create({
         elevation:5,
         flex:1,
         backgroundColor:THEME.CARD,
-        margin: 5,
         borderRadius:10,
         justifyContent:"center",
         alignItems:"center"

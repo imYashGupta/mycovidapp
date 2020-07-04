@@ -4,6 +4,7 @@ import { THEME } from '../util/THEME'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {  TouchableNativeFeedback } from 'react-native-gesture-handler';
 import Fallback from '../components/FallBack';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import Axios from 'axios';
 const StateScreen = (props) => {
@@ -103,7 +104,10 @@ const StateScreen = (props) => {
                                             <Image source={{ uri: s.countryInfo.flag }} style={{ width: 20, height: 20,marginRight:10 }} />
                                             <Text style={styles.tableRowText}>{s.country}</Text>
                                         </View>
-                                        <Text style={styles.tableRowText}> {numberWithCommas(s.cases)}</Text>
+                                        <Text style={styles.tableRowText}>
+                                            
+
+                                             {numberWithCommas(s.cases)}</Text>
                                     </TouchableNativeFeedback>
                                 </View>
                             )
@@ -196,15 +200,15 @@ export const ScreenOptions = (props) => {
         },
         headerTintColor:"white",
         headerTitle: "World",
-        headerRight: () => {
-            return (
-                <View style={{ marginRight: 10 }}>
-                    <TouchableNativeFeedback onPress={() => props.navigation.navigate("StateScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
-                        <Image source={require("../assets/in.png")} style={{width:20,height:20}} />
-                        <Text style={styles.headerButtonText}>India</Text>
-                    </TouchableNativeFeedback>
-                </View>
-            )
-        }
+        // headerRight: () => {
+        //     return (
+        //         <View style={{ marginRight: 10 }}>
+        //             <TouchableNativeFeedback onPress={() => props.navigation.navigate("StateScreen")} style={styles.headerButton} background={TouchableNativeFeedback.Ripple("#7b819d")}>
+        //                 <Image source={require("../assets/in.png")} style={{width:20,height:20}} />
+        //                 <Text style={styles.headerButtonText}>India</Text>
+        //             </TouchableNativeFeedback>
+        //         </View>
+        //     )
+        // }
     }
 }

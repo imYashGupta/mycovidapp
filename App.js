@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Navigation from "./navigation/MainNavigation";
 import Codepush from "react-native-code-push";
 import RNBootSplash from "react-native-bootsplash";
+import { View,StatusBar } from 'react-native';
 
 
 class App extends Component {
@@ -9,8 +10,9 @@ class App extends Component {
         RNBootSplash.hide({ duration: 250 });
     }
     render() {
-        return ( <
-            Navigation / >
+        return (
+    
+                <Navigation/>
         )
     }
 }
