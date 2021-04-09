@@ -19,7 +19,7 @@
     "appcenter": "4.1.0",
     "appcenter-analytics": "4.1.0",
     "appcenter-crashes": "4.1.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "intl": "^1.2.5",
     "moment": "^2.26.0",
     "react": "16.11.0",
