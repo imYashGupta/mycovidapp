@@ -12,7 +12,7 @@ import InfoCard from '../components/InfoCard';
 const StatsScreen = (props) => {
     const {district,district:{total,delta}} = props.route.params;
     let active  = total.confirmed - (total.recovered+total.deceased);
-
+    console.log(total)
     const [hasError, setHasError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [resources, setResources] = useState([]);
@@ -92,6 +92,9 @@ const StatsScreen = (props) => {
                     <Card color={THEME.EQUIPMENT} title="Active" value={(active)} desc="" />
                     <Card color={THEME.GREEN} title="Recovered" value={(total.recovered)} desc={delta.recovered} />
                     <Card color={THEME.DANGER} title="Death" value={(total.deceased)} desc={delta.deceased} />
+                </View>
+                <View style={{alignItems:"center",marginTop:-5,marginBottom:5}}>
+                    <Card  style={{marginRight:5,marginLeft:5,marginBottom:5}} color={THEME.CONDITION} title="Vaccine doses" value={total.vaccinated} desc={delta.vaccinated} />
                 </View>
                 <View style={styles.cardBg}>
                     {/* only show header when there is atleast one item */}
@@ -173,8 +176,9 @@ const styles = StyleSheet.create({
         borderRadius:5
     },
     resourcesheaderText:{
-        color:THEME.CONDITION,
-        fontSize:16
+        color:THEME.TAG,
+        fontSize: 16,
+        fontWeight:'bold'
     },
     headerButton:{
         height:30,

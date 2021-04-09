@@ -6,6 +6,7 @@ import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 import Fallback from '../components/FallBack';
 import Axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { formatNumber } from '../util/helper';
 
 const DistricScreen = (props) => {
     const {districts,day} =props.route.params;
@@ -20,11 +21,14 @@ const DistricScreen = (props) => {
                     confirmed:districts[district]?.total?.confirmed==undefined ? 0 : districts[district]?.total?.confirmed,
                     deceased:districts[district]?.total?.deceased==undefined ? 0 : districts[district]?.total?.deceased,
                     recovered:districts[district]?.total?.recovered==undefined ? 0 : districts[district]?.total?.recovered,
+                    vaccinated:districts[district]?.total?.vaccinated==undefined ? 0 : districts[district]?.total?.vaccinated,
                 }
                 ,delta:{
                     confirmed:districts[district]?.delta?.confirmed==undefined ? 0 : districts[district]?.delta?.confirmed,
                     deceased:districts[district]?.delta?.deceased==undefined ? 0 : districts[district]?.delta?.deceased,
-                    recovered:districts[district]?.delta?.recovered==undefined ? 0 : districts[district]?.delta?.recovered,
+                    recovered: districts[district]?.delta?.recovered == undefined ? 0 : districts[district]?.delta?.recovered,
+                    
+                    vaccinated:districts[district]?.delta?.vaccinated==undefined ? 0 : districts[district]?.delta?.vaccinated,
                 }
             });
         }
@@ -106,7 +110,7 @@ const DistricScreen = (props) => {
                                             {
                                                 d.delta.confirmed!=0 && validateNumber(() => d.delta.confirmed,'',true)
                                             }
-                                        </Text> {validateNumber(() => d.total.confirmed,'0',true)}</Text>
+                                        </Text> {formatNumber(d.total.confirmed)}</Text>
                                 </TouchableNativeFeedback>
                             </View>
                         )

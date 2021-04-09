@@ -59,7 +59,7 @@ export default class MyApp extends React.PureComponent {
                     containerStyle={{
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        marginVertical: 30,
+                        marginVertical: 5,
                     }}
                     pieStyle={{
                         width: 260,

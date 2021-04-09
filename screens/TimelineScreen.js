@@ -11,6 +11,7 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import HeaderButton from "../components/HeaderButton";
 import AsyncStorage from '@react-native-community/async-storage';
 import Fallback from '../components/FallBack';
+import { formatNumber } from '../util/helper';
 
 const TODAY_DATE=moment().format('YYYY-MM-DD');
 export default function TimeSeries(props) {
@@ -60,8 +61,8 @@ export default function TimeSeries(props) {
 
     const getTimeSeries = () => {
         setHasError(false);
-        Axios.get("https://api.covid19india.org/v3/min/timeseries.min.json").then(response => {
-            let timeSeries=Object.keys(response.data['TT']);
+        Axios.get("https://api.covid19india.org/v4/min/timeseries.min.json").then(response => {
+            let timeSeries=Object.keys(response.data['TT'].dates);
             setDates(timeSeries);
             setDateLoading(false)
         }).catch(error => {
@@ -78,17 +79,19 @@ export default function TimeSeries(props) {
             ToastAndroid.show("Today's actual data will update at midnight!",ToastAndroid.LONG);
         }
         const url = reqDate==TODAY_DATE ? "data.min.json" : `data-${reqDate}.min.json`;
-        Axios.get("https://api.covid19india.org/v3/min/"+url).then(response => {
+        Axios.get("https://api.covid19india.org/v4/min/"+url).then(response => {
             const arr = [];
             let india = response.data;
             for(let state in india){
                 if(state=='TT'){
                     //total 
-                    setTotal({name:state,total:india[state].total,delta:india[state].delta});
+                    setTotal({ name: state, total: india[state].total, delta: india[state].delta });
+                    const active = india[state].total.confirmed - india[state].total.recovered - india[state].total.deceased - india[state].total.other;
+                    console.log(typeof active)
                 }   
                 if(state!=='TT' && state!='UN'){
                     arr.push({
-                        name:state,
+                        name:state, 
                         total:{
                             confirmed:india[state]?.total?.confirmed==undefined ? 0 : india[state]?.total?.confirmed,
                             deceased:india[state]?.total?.deceased==undefined ? 0 : india[state]?.total?.deceased,
@@ -151,6 +154,13 @@ export default function TimeSeries(props) {
             return;
         }
     }
+
+    const activeCases = () => {
+        var active = total.total.confirmed - total.total.recovered - total.total.deceased - total.total.other;
+    
+      
+        return active;
+    }
     
     
 
@@ -194,10 +204,13 @@ export default function TimeSeries(props) {
             </View> */}
             <View style={styles.cards}>
                 <Card style={{marginRight:5,marginLeft:5}}  color={THEME.SUBJECT} title="Confirmed" value={total.total.confirmed} desc={total.delta.confirmed} />
-                <Card style={{marginRight:5}} color={THEME.EQUIPMENT} title="Tested" value={total.total.tested} desc={total.delta.tested} />
+                <Card style={{marginRight:5}} color={THEME.EQUIPMENT} title="Active" value={activeCases()} desc="" />
                 <Card  style={{marginRight:5,marginLeft:5,marginVertical:5}} color={THEME.GREEN} title="Recovered" value={total.total.recovered} desc={total.delta.recovered} />
                 <Card  style={{marginRight:5,marginVertical:5}} color={THEME.DANGER} title="Deaths" value={total.total.deceased} desc={total.delta.deceased} />
+                <Card  style={{marginRight:5,marginLeft:5,marginBottom:5}} color={THEME.CONDITION} title="Vaccine doses" value={total.total.vaccinated} desc={total.delta.vaccinated} />
+                <Card  style={{marginRight:5,marginBottom:5}} color={THEME.TAG} title="Tested" value={total.total.tested} desc={total.delta.tested} />
             </View>
+             
             <View style={styles.tableConatiner}>
                 
                 <View>
@@ -214,12 +227,19 @@ export default function TimeSeries(props) {
                                         clickable={item.districts!=undefined}
                                         navigate={() => navigateToDistrict(item)}
                                         name={STATE_NAMES[item.name]} 
-                                        confirmed={validateNumber(() => item.total.confirmed,'0')}
-                                        recovered={validateNumber(() => item.total.recovered,'0')}
-                                        deaths={validateNumber(() => item.total.deceased,'0')}
-                                        todayConfirmed={validateNumber(() => item.delta.confirmed,'0')}
-                                        todayRecovered={validateNumber(() => item.delta.recovered,'0')}
-                                        todayDeaths={validateNumber(() => item.delta.deceased,'0')}
+                                        // confirmed={validateNumber(() => item.total.confirmed,'0')}
+                                        confirmed={formatNumber(item.total.confirmed,'short')}
+                                        // recovered={validateNumber(() => item.total.recovered,'0')}
+                                        recovered={formatNumber(item.total.recovered,'short')}
+                                        // deaths={validateNumber(() => item.total.deceased,'0')}
+                                        deaths={formatNumber(item.total.deceased,'short')}
+                                        // todayConfirmed={validateNumber(() => item.delta.confirmed,'0')}
+                                        todayConfirmed={formatNumber(item.delta.confirmed)}
+                                        // todayRecovered={validateNumber(() => item.delta.recovered,'0')}
+                                        todayRecovered={formatNumber(item.delta.recovered)}
+                                        // todayDeaths={validateNumber(() => item.delta.deceased,'0')}
+                                        todayDeaths={formatNumber(item.delta.deceased)}
+
                                     />
                                 )
                             })
@@ -234,6 +254,9 @@ export default function TimeSeries(props) {
 }
 
 const styles = StyleSheet.create({
+    //new Vaccine data css
+
+
     screen: {
         backgroundColor: THEME.DARK,
         flex: 1
